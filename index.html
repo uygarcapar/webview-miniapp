@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebView MiniApp – SuperSDK Bridge</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>MiniApp Bridge Demo</h1>
+    <p class="subtitle">SuperSDK → Native communication via <code>postMessage</code></p>
+
+    <!-- ====== Identity ====== -->
+    <section class="card">
+      <h2>User Identity</h2>
+      <button id="btnGetIdentity" class="btn btn-primary">GetIdentity</button>
+      <div id="resultIdentity" class="result-box"></div>
+    </section>
+
+    <!-- ====== Phone ====== -->
+    <section class="card">
+      <h2>Phone Number</h2>
+      <button id="btnGetPhoneNumber" class="btn btn-primary">GetPhoneNumber</button>
+      <div id="resultPhoneNumber" class="result-box"></div>
+    </section>
+
+    <!-- ====== Mail ====== -->
+    <section class="card">
+      <h2>Mail Address</h2>
+      <button id="btnGetMailAddress" class="btn btn-primary">GetMailAddress</button>
+      <div id="resultMailAddress" class="result-box"></div>
+    </section>
+
+    <!-- ====== Customer Number ====== -->
+    <section class="card">
+      <h2>Customer Number</h2>
+      <button id="btnGetCustomerNumber" class="btn btn-primary">GetCustomerNumber</button>
+      <div id="resultCustomerNumber" class="result-box"></div>
+    </section>
+
+    <!-- ====== Commercial Customer Number ====== -->
+    <section class="card">
+      <h2>Commercial Customer Number</h2>
+      <button id="btnGetCommercialCustomerNumber" class="btn btn-primary">GetCommercialCustomerNumber</button>
+      <div id="resultCommercialCustomerNumber" class="result-box"></div>
+    </section>
+
+    <!-- ====== Location ====== -->
+    <section class="card">
+      <h2>Location</h2>
+      <button id="btnGetLocation" class="btn btn-primary">GetLocation</button>
+      <div id="resultLocation" class="result-box"></div>
+    </section>
+
+    <!-- ====== Open Map ====== -->
+    <section class="card">
+      <h2>Open Map</h2>
+      <p class="hint">Fire-and-forget — no callback expected.</p>
+      <button id="btnOpenMap" class="btn btn-secondary">OpenMap</button>
+      <div id="resultOpenMap" class="result-box"></div>
+    </section>
+
+    <!-- ====== Send Payment ====== -->
+    <section class="card">
+      <h2>Send Payment</h2>
+      <p class="hint">Sends <code>amount: 100.45</code> and <code>orderId: "343432789721256274"</code>.</p>
+      <button id="btnSendPayment" class="btn btn-accent">sendPayment</button>
+      <div id="resultSendPayment" class="result-box"></div>
+    </section>
+
+    <!-- ====== Global Error Log ====== -->
+    <section class="card error-card">
+      <h2>Error Log</h2>
+      <div id="errorLog" class="result-box error-box"></div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
