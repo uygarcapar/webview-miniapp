@@ -30,9 +30,24 @@ function postToMiniapp(payload) {
     return;
   }
 
-  const errorMsg = "Miniapp bridge not found (no iOS/Android handler available).";
+  const errorMsg = "Miniapp bridge not found (no iOS/Android handler available). "
+    + "This page must be opened inside the SuperSDK native app WebView.";
   console.error("[Bridge]", errorMsg);
   appendError(errorMsg);
+
+  // Also show a visible alert on the page itself
+  const container = document.querySelector(".container");
+  if (container) {
+    const banner = document.createElement("div");
+    banner.style.cssText =
+      "background:#fef2f2;border:2px solid #fca5a5;border-radius:12px;padding:16px;margin-bottom:16px;color:#991b1b;font-size:0.9rem;";
+    banner.innerHTML =
+      "<strong>⚠️ Bridge Not Available</strong><br>"
+      + "This page is not running inside the SuperSDK native WebView. "
+      + "Please open it through the native app. "
+      + "If you are already in the app, check that the URL is allowed by the host.";
+    container.prepend(banner);
+  }
 }
 
 // -------------------------------------------------------------------
@@ -218,11 +233,13 @@ function GetLocationCallback(result) {
 }
 
 // 5g. sendPayment – sendPayment pattern: isSuccess only (no isApproved check)
+//     retVal is the raw value from the host (not wrapped in funcRetVal).
+//     Display it with JSON.stringify per specification.
 function sendPaymentCallback(result) {
   try {
     if (result.isSuccess) {
-      // sendPayment result is in retVal; display as JSON string
-      showResult("resultSendPayment", result.retVal);
+      const displayText = JSON.stringify(result.retVal, null, 2);
+      showResult("resultSendPayment", displayText);
     } else {
       showResult("resultSendPayment", {
         error: "Payment failed",

@@ -13,6 +13,27 @@
 //    - On success: callback([...])   → wrapped as { isSuccess: true, retVal: { ... } }
 //    - On failure: errorCallback([:]) → wrapped as { isSuccess: false, error: { message, code } }
 //
+//  ⚠️  "the url cant be shown" Error
+//  If the native host rejects the MiniApp URL with "the url cant be shown",
+//  check the following in your WKNavigationDelegate / WKWebView configuration:
+//
+//    1. URL Allowlist – SuperSDK host typically only allows specific domains.
+//       Add your MiniApp URL (e.g. https://your-domain.com/miniapp) to the
+//       allowlist in the native app configuration.
+//
+//    2. Scheme – Only https:// is allowed by default. file:// and http://
+//       (localhost) are usually blocked. Serve your MiniApp over HTTPS.
+//
+//    3. WKNavigationDelegate – Implement decidePolicyFor navigationAction
+//       and log the rejected URL to find out which rule blocked it:
+//
+//       func webView(_ webView: WKWebView,
+//                    decidePolicyFor navigationAction: WKNavigationAction,
+//                    decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+//           print("[Navigation] Loading URL: \(navigationAction.request.url?.absoluteString ?? "nil")")
+//           decisionHandler(.allow)
+//       }
+//
 
 import Foundation
 
@@ -109,6 +130,10 @@ func callMethod(
     // -------------------------------------------------------------------
     // sendPayment
     // -------------------------------------------------------------------
+    // IMPORTANT: sendPayment response is NOT wrapped in funcRetVal/isApproved.
+    // The WKScriptMessageHandler example below sends it as:
+    //   { "isSuccess": true, "retVal": <this callback's dictionary> }
+    // The web side reads result.retVal directly (no .funcRetVal, no .isApproved check).
     case "sendPayment":
         // TODO: Route to native payment SDK
         //   guard let amount = param?["amount"] as? Double,
@@ -154,17 +179,27 @@ extension ViewController: WKScriptMessageHandler {
             functionName: functionName,
             param: param,
             callback: { retVal in
+                // Get* functions (GetIdentity, GetPhoneNumber, etc.) use
+                // the standard funcRetVal/isApproved wrapping.
+                // sendPayment uses retVal directly (no funcRetVal wrapper).
+                let isPayment = (functionName == "sendPayment")
+
                 let response: [String: Any] = [
                     "isSuccess": true,
-                    "retVal": [
-                        "consentName": functionName ?? "",
-                        "isApproved": true,
-                        "funcRetVal": retVal
-                    ]
+                    "retVal": isPayment
+                        ? retVal   // sendPayment: raw value in retVal
+                        : [        // Get*: standard wrapping
+                            "consentName": functionName ?? "",
+                            "isApproved": true,
+                            "funcRetVal": retVal
+                        ]
                 ]
                 // Send back via evaluateJavaScript:
-                // let js = "functionCallback('\(functionName!)', '\(response.jsonString)')"
-                // webView.evaluateJavaScript(js, completionHandler: nil)
+                // if let jsonData = try? JSONSerialization.data(withJSONObject: response),
+                //    let jsonString = String(data: jsonData, encoding: .utf8) {
+                //     let js = "functionCallback('\(functionName!)', '\(jsonString)')"
+                //     webView.evaluateJavaScript(js, completionHandler: nil)
+                // }
             },
             errorCallback: { error in
                 let response: [String: Any] = [
@@ -172,8 +207,11 @@ extension ViewController: WKScriptMessageHandler {
                     "error": error
                 ]
                 // Send back via evaluateJavaScript:
-                // let js = "functionCallback('\(functionName!)', '\(response.jsonString)')"
-                // webView.evaluateJavaScript(js, completionHandler: nil)
+                // if let jsonData = try? JSONSerialization.data(withJSONObject: response),
+                //    let jsonString = String(data: jsonData, encoding: .utf8) {
+                //     let js = "functionCallback('\(functionName!)', '\(jsonString)')"
+                //     webView.evaluateJavaScript(js, completionHandler: nil)
+                // }
             }
         )
     }
