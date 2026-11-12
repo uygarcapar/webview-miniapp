@@ -135,16 +135,45 @@ func callMethod(
     //   { "isSuccess": true, "retVal": <this callback's dictionary> }
     // The web side reads result.retVal directly (no .funcRetVal, no .isApproved check).
     case "sendPayment":
-        // TODO: Route to native payment SDK
-        //   guard let amount = param?["amount"] as? Double,
-        //         let orderId = param?["orderId"] as? String else {
-        //       errorCallback(["message": "Missing amount or orderId", "code": "70"])
-        //       return
-        //   }
-        // Optional: type, installment, paymentToken
+        // Validate required parameters
+        guard let amount = param?["amount"] as? Double else {
+            errorCallback(["message": "Missing or invalid 'amount' (expected Double)", "code": "70"])
+            return
+        }
+        guard let orderId = param?["orderId"] as? String, !orderId.isEmpty else {
+            errorCallback(["message": "Missing or empty 'orderId' (expected String)", "code": "70"])
+            return
+        }
+
+        // Optional parameters
+        let paymentType = param?["type"] as? String
+        let installment = param?["installment"] as? Int
+        let paymentToken = param?["paymentToken"] as? String
+
+        // TODO: Replace with real native payment SDK call
+        // Example integration:
+        //
+        // PaymentSDK.shared.startPayment(
+        //     amount: amount,
+        //     orderId: orderId,
+        //     type: paymentType,
+        //     installment: installment,
+        //     paymentToken: paymentToken,
+        //     onSuccess: { transactionId in
+        //         callback(["paymentStatus": "success", "transactionId": transactionId])
+        //     },
+        //     onFailure: { error in
+        //         errorCallback(["message": error.localizedDescription, "code": "79"])
+        //     }
+        // )
+
+        // For now, simulate a successful payment response
+        // Remove this mock once the real SDK integration above is implemented
+        let transactionId = "TXN-" + String(Int(Date().timeIntervalSince1970))
+        print("[Bridge] sendPayment – amount: \(amount), orderId: \(orderId), transactionId: \(transactionId)")
         callback([
             "paymentStatus": "success",
-            "transactionId": "TXN-20261108-001"
+            "transactionId": transactionId
         ])
 
     // -------------------------------------------------------------------
